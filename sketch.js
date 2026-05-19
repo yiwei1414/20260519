@@ -12,8 +12,9 @@ let lastTimestamp = 0;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
+  // 設定攝影機
   capture = createCapture(VIDEO);
-  capture.size(640, 480);
+  capture.size(640, 480); 
   capture.hide();
 
   // 初始化手勢偵測
@@ -36,9 +37,8 @@ function draw() {
   imageMode(CENTER);
   image(capture, 0, 0, width * 0.5, height * 0.5);
   
-  // 如果有偵測到手，可以在這裡畫出關節點（可選）
   if (hands.length > 0) {
-    drawHandMarkers();
+    drawHandSkeleton(); // 改為繪製完整的骨架
   }
   pop();
 
@@ -53,8 +53,9 @@ function draw() {
     
     if (gameState === "WAITING") {
       textSize(24);
-      text(`偵測中... 目前手勢：${currentGesture}`, width / 2, height * 0.8);
-      if (currentGesture !== "未知" && frameCount % 60 === 0) {
+      text(`偵測手勢中：${currentGesture}`, width / 2, height * 0.8);
+      // 如果偵測到有效手勢，且準備好則進入倒數
+      if (currentGesture !== "未知" && gameState === "WAITING") {
         gameState = "COUNTDOWN";
         timer = 3;
       }
@@ -124,17 +125,47 @@ function playGame(pChoice) {
   }
 }
 
-function drawHandMarkers() {
-  // 在預覽圖上標示手部重點
-  fill(0, 255, 0);
-  noStroke();
+function drawHandSkeleton() {
   let hand = hands[0];
+  
+  // 1. 繪製骨架連接線
+  stroke(255, 255, 0); // 黃色線條
+  strokeWeight(3);
+  
+  // 這裡使用 ml5 提供的手指連線邏輯 (簡化版)
+  // 每個手指的四個點連起來
+  let fingerIndices = [
+    [0, 1, 2, 3, 4],     // 大拇指
+    [0, 5, 6, 7, 8],     // 食指
+    [0, 9, 10, 11, 12],  // 中指
+    [0, 13, 14, 15, 16], // 無名指
+    [0, 17, 18, 19, 20]  // 小指
+  ];
+
+  for (let finger of fingerIndices) {
+    for (let i = 0; i < finger.length - 1; i++) {
+      let p1 = hand.keypoints[finger[i]];
+      let p2 = hand.keypoints[finger[i+1]];
+      line(mapToCanvas(p1.x, 'x'), mapToCanvas(p1.y, 'y'), 
+           mapToCanvas(p2.x, 'x'), mapToCanvas(p2.y, 'y'));
+    }
+  }
+
+  // 2. 繪製節點
+  noStroke();
+  fill(255, 0, 0); // 紅色節點
   for (let i = 0; i < hand.keypoints.length; i++) {
     let kp = hand.keypoints[i];
-    // 縮放到 50% 畫布大小
-    let x = (kp.x - 320) * (width * 0.5 / 640);
-    let y = (kp.y - 240) * (height * 0.5 / 480);
-    ellipse(x, y, 10, 10);
+    ellipse(mapToCanvas(kp.x, 'x'), mapToCanvas(kp.y, 'y'), 8, 8);
+  }
+}
+
+// 輔助函式：將攝影機座標映射到畫布上的 50% 置中影像位置
+function mapToCanvas(val, axis) {
+  if (axis === 'x') {
+    return (val - 320) * (width * 0.5 / 640);
+  } else {
+    return (val - 240) * (height * 0.5 / 480);
   }
 }
 
