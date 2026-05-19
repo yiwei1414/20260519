@@ -5,7 +5,7 @@ let choices = ['石頭', '布', '剪刀'];
 let playerChoice = "";
 let computerChoice = "";
 let resultMessage = "";
-let gameState = "WAITING"; // WAITING, COUNTDOWN, RESULT
+let gameState = "WAITING"; // WAITING, COUNTDOWN, RESULT, FINISHED
 let timer = 3;
 let lastTimestamp = 0;
 
@@ -32,7 +32,19 @@ function setup() {
 }
 
 function draw() {
-  background('#e7c6ff');
+  if (gameState === "FINISHED") {
+    background(0);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(60);
+    text("遊戲結束", width / 2, height / 2);
+    textSize(24);
+    text("請重新整理網頁以再次開始", width / 2, height / 2 + 80);
+    return;
+  }
+
+  // 背景改為藍色
+  background('blue');
 
   // 影像處理：在中間、50% 大小、左右顛倒
   push();
@@ -41,8 +53,8 @@ function draw() {
   imageMode(CENTER);
   image(capture, 0, 0, width * 0.5, height * 0.5);
   
-  if (hands.length > 0) {
-    drawHandSkeleton(); // 改為繪製完整的骨架
+  for (let i = 0; i < hands.length; i++) {
+    drawHandSkeleton(hands[i]); // 繪製所有偵測到的手部骨架
   }
   pop();
 
@@ -50,6 +62,7 @@ function draw() {
   textAlign(CENTER, CENTER);
   fill(50);
   textSize(32);
+  fill(255); // 改成白色字體在藍色背景較清楚
   text("手勢感應猜拳", width / 2, 50);
 
   if (hands.length > 0) {
@@ -86,10 +99,23 @@ function draw() {
     text(`你出：${playerChoice}  vs  電腦出：${computerChoice}`, width / 2, height * 0.8);
     textSize(50);
     text(resultMessage, width / 2, height * 0.9);
-    
-    // 顯示結果 3 秒後重置
-    if (millis() - lastTimestamp > 3000) {
-      gameState = "WAITING";
+
+    textSize(24);
+    fill(255);
+    text("繼續：雙手全開 (🖐️🖐️) | 結束：比倒讚 (👎)", width / 2, 120);
+
+    // 1. 偵測到兩個全開的手掌就繼續遊戲
+    if (hands.length === 2) {
+      if (getGesture(hands[0]) === "布" && getGesture(hands[1]) === "布") {
+        gameState = "WAITING";
+      }
+    }
+
+    // 2. 偵測到倒讚就結束遊戲
+    for (let h of hands) {
+      if (getGesture(h) === "倒讚") {
+        gameState = "FINISHED";
+      }
     }
   }
 }
@@ -105,7 +131,13 @@ function getGesture(hand) {
 
   let count = [f8, f12, f16, f20].filter(v => v).length;
 
-  if (count === 0) return "石頭";
+  // 倒讚辨識：四指握拳，且大拇指尖 (點4) 低於大拇指關節 (點2)
+  let thumbDown = keypoints[4].y > keypoints[2].y;
+
+  if (count === 0) {
+    if (thumbDown) return "倒讚";
+    return "石頭";
+  }
   if (count === 2 && f8 && f12) return "剪刀";
   if (count >= 3) return "布";
   return "未知";
@@ -129,8 +161,7 @@ function playGame(pChoice) {
   }
 }
 
-function drawHandSkeleton() {
-  let hand = hands[0];
+function drawHandSkeleton(hand) {
   
   // 1. 繪製骨架連接線
   stroke(255, 255, 0); // 黃色線條
@@ -164,12 +195,12 @@ function drawHandSkeleton() {
   }
 }
 
-// 輔助函式：將攝影機座標映射到畫布上的 50% 置中影像位置
+// 輔助函式：將攝影機座標精確映射到畫布上的 50% 置中影像位置
 function mapToCanvas(val, axis) {
   if (axis === 'x') {
-    return (val - 320) * (width * 0.5 / 640);
+    return map(val, 0, capture.width, -width * 0.25, width * 0.25);
   } else {
-    return (val - 240) * (height * 0.5 / 480);
+    return map(val, 0, capture.height, -height * 0.25, height * 0.25);
   }
 }
 
