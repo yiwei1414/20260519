@@ -9,22 +9,26 @@ let gameState = "WAITING"; // WAITING, COUNTDOWN, RESULT
 let timer = 3;
 let lastTimestamp = 0;
 
+function preload() {
+  // 在 preload 中初始化模型
+  handPose = ml5.handPose();
+}
+
+function gotHands(results) {
+  // 更新偵測結果的回調函式
+  hands = results;
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
   // 設定攝影機
   capture = createCapture(VIDEO);
-  capture.size(640, 480); 
+  capture.size(640, 480);
   capture.hide();
 
-  // 初始化手勢偵測
-  handPose = ml5.handPose(capture, () => {
-    console.log("手勢模型載入完成");
-  });
-  // 持續偵測手部
-  handPose.detectStart(capture, (results) => {
-    hands = results;
-  });
+  // 開始持續偵測
+  handPose.detectStart(capture, gotHands);
 }
 
 function draw() {
@@ -151,12 +155,12 @@ function drawHandSkeleton() {
     }
   }
 
-  // 2. 繪製節點
+  // 2. 繪製節點 (使用你提供的綠色圓圈樣式)
   noStroke();
-  fill(255, 0, 0); // 紅色節點
+  fill(0, 255, 0); // 綠色節點
   for (let i = 0; i < hand.keypoints.length; i++) {
     let kp = hand.keypoints[i];
-    ellipse(mapToCanvas(kp.x, 'x'), mapToCanvas(kp.y, 'y'), 8, 8);
+    circle(mapToCanvas(kp.x, 'x'), mapToCanvas(kp.y, 'y'), 10);
   }
 }
 
