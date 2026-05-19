@@ -61,8 +61,7 @@ function draw() {
   // 遊戲邏輯與 UI
   textAlign(CENTER, CENTER);
   fill(50);
-  textSize(32);
-  fill(255); // 改成白色字體在藍色背景較清楚
+  textSize(32); fill(255); // 主標題保持白色
   text("手勢感應猜拳", width / 2, 50);
 
   if (hands.length > 0) {
@@ -70,7 +69,7 @@ function draw() {
     
     if (gameState === "WAITING") {
       textSize(24);
-      text(`偵測手勢中：${currentGesture}`, width / 2, height * 0.8);
+      text(`偵測手勢中：${currentGesture}`, width / 2, height * 0.83); // 移至攝影機下方
       // 如果偵測到有效手勢，且準備好則進入倒數
       if (currentGesture !== "未知" && gameState === "WAITING") {
         gameState = "COUNTDOWN";
@@ -90,19 +89,26 @@ function draw() {
     }
   } else {
     textSize(20);
-    text("請將手放在攝影機前", width / 2, height * 0.8);
+    text("請將手放在攝影機前", width / 2, height * 0.83); // 移至攝影機下方
   }
 
   if (gameState === "RESULT") {
-    textSize(30);
-    fill(255, 0, 0);
-    text(`你出：${playerChoice}  vs  電腦出：${computerChoice}`, width / 2, height * 0.8);
-    textSize(50);
-    text(resultMessage, width / 2, height * 0.9);
-
     textSize(24);
-    fill(255);
-    text("繼續：雙手全開 (🖐️🖐️) | 結束：比倒讚 (👎)", width / 2, 120);
+    fill(255); // 白色文字
+    text("繼續：雙手全開 (🖐️🖐️) | 結束：比倒讚 (👎)", width / 2, height * 0.78); // 移至攝影機下方
+
+    textSize(30);
+    fill(255); // 白色文字
+    text(`你出：${playerChoice}  vs  電腦：${computerChoice}`, width / 2, height * 0.85); // 調整位置
+
+    let emoji = "";
+    if (resultMessage === "你贏了！") {
+      emoji = "🏆";
+    } else if (resultMessage === "你輸了！") {
+      emoji = "🔥";
+    }
+    textSize(50); // 調整文字大小以容納符號
+    text(`${resultMessage} ${emoji}`, width / 2, height * 0.93); // 調整位置並加入符號
 
     // 1. 偵測到兩個全開的手掌就繼續遊戲
     if (hands.length === 2) {
