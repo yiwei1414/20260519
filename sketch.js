@@ -93,11 +93,11 @@ function draw() {
   }
 
   if (gameState === "RESULT") {
-    textSize(24);
+    textSize(20);
     fill(255); // 白色文字
-    text("繼續：雙手全開 (🖐️🖐️) | 結束：比倒讚 (👎)", width / 2, height * 0.78); // 移至攝影機下方
+    text("繼續：雙手全開 (🖐️🖐️) | 結束：比倒讚 (👎)", width / 2, height * 0.79); // 移至攝影機下方
 
-    textSize(30);
+    textSize(26);
     fill(255); // 白色文字
     text(`你出：${playerChoice}  vs  電腦：${computerChoice}`, width / 2, height * 0.85); // 調整位置
 
@@ -107,8 +107,8 @@ function draw() {
     } else if (resultMessage === "你輸了！") {
       emoji = "🔥";
     }
-    textSize(50); // 調整文字大小以容納符號
-    text(`${resultMessage} ${emoji}`, width / 2, height * 0.93); // 調整位置並加入符號
+    textSize(36); // 縮小文字大小以符合需求
+    text(`${resultMessage} ${emoji}`, width / 2, height * 0.91); // 調整位置避免壓到上方文字
 
     // 1. 偵測到兩個全開的手掌就繼續遊戲
     if (hands.length === 2) {
